@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <map>
 
 using namespace MetaModule;
@@ -246,6 +248,18 @@ std::string Pages::value_text(Item const &it, PatchPlayer &player) {
 	if (!it.element)
 		return std::to_string((int)std::lround(v * 100.f)) + "%";
 	auto s = get_element_value_string(*it.element, v, 100.f);
+	// 4ms prints custom-range values with up to five decimals ("36.958%"): three significant digits read better
+	// on the Force ("37%", "1.21s", "440Hz"); text values ("Saw") are left alone
+	if (!s.empty() && (std::isdigit((unsigned char)s[0]) || s[0] == '-' || s[0] == '.')) {
+		char *end = nullptr;
+		double num = std::strtod(s.c_str(), &end);
+		if (end && end != s.c_str()) {
+			char b[32];
+			std::snprintf(b, sizeof b, "%.3g", num);
+			std::string unit = end;
+			s = std::string(b) + unit;
+		}
+	}
 	if (s.empty())
 		s = std::to_string((int)std::lround(v * 100.f)) + "%";
 	if (s.size() > 22)

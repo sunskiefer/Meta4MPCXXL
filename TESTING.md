@@ -15,7 +15,7 @@ All passed:
   parameter 0, chunk round trip, 3000 concurrent screen-side calls while rendering. Its two "rms 0" warnings are
   expected: it renders before the first patch has finished loading on the worker thread.
 
-CPU on x86 (one core): 2-10% per patch. The Force is far slower per core: measure with `tools/bench.sh` there.
+CPU on x86 (one core): 2-10% per patch. The Force build was also run under ARM emulation (qemu-arm, glibc 2.31 cross libraries): see the 0.1.0 notes in CHANGELOG.md. The Force is far slower per core: measure with `tools/bench.sh` there.
 
 ## On the Force (to do, in this order)
 

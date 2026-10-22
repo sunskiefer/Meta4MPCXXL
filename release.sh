@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 V="${1:?version, e.g. 0.1.0}"
 MPC_VST="${MPC_VST:-$PWD/third_party/mpc-vst-plugins}"
-rm -rf dist && mkdir -p dist build/release
+rm -rf dist build/release && mkdir -p dist build/release
 cp -r patches build/release/patches
 mkdir -p build/release/licenses && cp LICENSE build/release/licenses/GPL-3.0.txt && cp art/fonts/OFL-*.txt build/release/licenses/
 rel() {   # rel <id> <so> <gen dir> <name> <about>
