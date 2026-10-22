@@ -1,0 +1,91 @@
+#pragma once
+#include "CoreModules/CoreProcessor.hh"
+#include "CoreModules/context_menu.hh"
+#include "CoreModules/element_group.hh"
+#include "CoreModules/elements/element_info_view.hh"
+#include <functional>
+#include <memory>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace MetaModule
+{
+
+class ModuleFactory {
+public:
+	using CreateModuleFunc = std::function<std::unique_ptr<CoreProcessor>()>;
+
+	ModuleFactory() = delete;
+
+	static bool registerModuleType(std::string_view brand_name,
+								   std::string_view typeslug,
+								   CreateModuleFunc funcCreate,
+								   const ModuleInfoView &info,
+								   std::string_view faceplate_filename);
+
+	// defaults to brand = "4ms"
+	static bool registerModuleType(std::string_view typeslug,
+								   CreateModuleFunc funcCreate,
+								   const ModuleInfoView &info,
+								   std::string_view faceplate_filename);
+
+	static std::unique_ptr<CoreProcessor> create(std::string_view combined_slug);
+
+	static ModuleInfoView &getModuleInfo(std::string_view combined_slug);
+	static std::string_view getModuleFaceplate(std::string_view combined_slug);
+
+	// Context menu for native modules. Module must already be registered.
+	static bool
+	registerContextMenu(std::string_view brand_name, std::string_view module_slug, ContextMenuHandlers handlers);
+	// Returns nullptr if the module has no context menu
+	static ContextMenuHandlers const *getContextMenu(std::string_view combined_slug);
+
+	// Element groups for the module view's element list
+	static bool
+	setElementGroups(std::string_view brand_name, std::string_view module_slug, std::vector<ElementGroup> groups);
+	static std::span<const ElementGroup> getElementGroups(std::string_view combined_slug);
+
+	// Order of the top level of the module view's element list
+	static bool
+	setElementOrder(std::string_view brand_name, std::string_view module_slug, std::vector<ElementRef> order);
+	static std::span<const ElementRef> getElementOrder(std::string_view combined_slug);
+
+	// Custom names shown in the module view's element list
+	static bool
+	setElementNames(std::string_view brand_name, std::string_view module_slug, std::vector<ElementName> names);
+	static std::span<const ElementName> getElementNames(std::string_view combined_slug);
+
+	// Returns true if slug is valid and registered.
+	static bool isValidSlug(std::string_view combined_slug);
+	static bool isValidBrandModule(std::string_view brand, std::string_view module_name);
+	static bool isRegisteredBrand(std::string_view brand);
+
+	static std::vector<std::string_view> getAllModuleSlugs(std::string_view brand);
+	static std::vector<std::string_view> getAllBrands();
+	static std::vector<std::string> getAllModuleDisplayNames(std::string_view brand);
+	static std::vector<std::string_view> getAllBrandDisplayNames();
+
+	static void setModuleDisplayName(std::string_view combined_slug, std::string_view display_name);
+	static std::string_view getModuleDisplayName(std::string_view combined_slug);
+	static void setBrandDisplayName(std::string_view brand_name, std::string_view display_name);
+	static std::string_view getBrandDisplayName(std::string_view brand_name);
+	static std::vector<std::string_view> getBrandSlugsWithDisplayName(std::string_view display_name);
+	static std::string_view getModuleSlug(std::string_view brand_slug, std::string_view display_name);
+
+	static void setModuleDescription(std::string_view combined_slug, std::string_view description);
+	static void setModuleTags(std::string_view combined_slug, std::span<const std::string> tags);
+	static std::span<const std::string> getModuleTags(std::string_view combined_slug);
+	static std::span<const std::string> getModuleTags(std::string_view brand, std::string_view module_name);
+	static std::string_view getModuleDescription(std::string_view combined_slug);
+
+	static void registerBrandAlias(std::string_view brand, std::string_view alias);
+	static bool unregisterBrand(std::string_view brand_name);
+
+	static bool unregisterModule(std::string_view brand, std::string_view module_name);
+
+	static std::string cleanupBrandName(std::string_view brand_name);
+};
+
+} // namespace MetaModule

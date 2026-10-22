@@ -1,0 +1,81 @@
+#ifdef CORE_CA7
+#include <arm_neon.h>
+#else
+#include "util/soft_neon.hh"
+#endif
+
+class ParallelBPIIR {
+	// Todo: re-arranging might improve cache performance
+public:
+	float32x4_t __attribute__((aligned(16))) fSlow19202122;
+	// float32x4_t __attribute__((aligned(16))) fRec0567_0;
+	float32x4_t __attribute__((aligned(16))) fRec0567_1;
+	float32x4_t __attribute__((aligned(16))) fRec0567_2;
+	float32x4_t __attribute__((aligned(16))) fConst691215;
+	float32x4_t __attribute__((aligned(16))) outmixWeights;
+
+public:
+	ParallelBPIIR() {
+		fRec0567_1 = vdupq_n_f32(0.f);
+		fRec0567_2 = vdupq_n_f32(0.f);
+	}
+
+	// float[4]: par_weights: weighting (0..1) for each parallel IIR filter output in the mix
+	// float[4]: slows = control-dependant values (a1?)
+	// float[4]: consts = samplerate-dependant values (a2?)
+	ParallelBPIIR(const float slows[4], const float consts[4], const float par_weights[4]) {
+		fRec0567_1 = vdupq_n_f32(0.f);
+		fRec0567_2 = vdupq_n_f32(0.f);
+		set_slows(slows);
+		set_outmix(par_weights);
+		set_consts(consts);
+	}
+
+	~ParallelBPIIR() = default;
+
+	void set_outmix(const float par_weights[4]) {
+		outmixWeights = vld1q_f32(par_weights);
+	}
+	void set_consts(const float consts[4]) {
+		fConst691215 = vld1q_f32(consts);
+	}
+
+	void set_slows(const float slows[4]) {
+		fSlow19202122 = vld1q_f32(slows);
+	}
+
+	// Compute the four parallel IIRs and return their weighted outputs as a
+	// 4-wide vector, without the horizontal reduction. A caller summing several
+	// banks can accumulate these vectors and reduce once at the end -- each
+	// reduction is a NEON->ARM transfer that stalls the in-order Cortex-A7.
+	float32x4_t calc_4iir_vec(float in) {
+		float32x4_t __attribute__((aligned(16))) fRec0567_0;
+		fRec0567_0 = vmulq_f32(fSlow19202122, fRec0567_1);
+		fRec0567_0 = vmlaq_f32(fRec0567_0, fConst691215, fRec0567_2);
+
+		float32x4_t __attribute__((aligned(16))) in_v = vdupq_n_f32(in);
+		fRec0567_0 = vsubq_f32(in_v, fRec0567_0);
+
+		float32x4_t __attribute__((aligned(16))) diff0567_02 = vsubq_f32(fRec0567_0, fRec0567_2);
+		float32x4_t __attribute__((aligned(16))) outvec = vmulq_f32(diff0567_02, outmixWeights);
+
+		// Shift the filter state: fRec[n-2] <- fRec[n-1] <- fRec[n]. An older compiler
+		// elided these plain member assignments (they emitted no code), so this was
+		// written as fRecX = vmaxq_f32(fRecY, fRecY) to force the moves. GCC 14 compiles
+		// the assignments correctly -- the emitted state stores match the old vmax form
+		// exactly (verified in the .s), with the redundant vmax ALU ops gone.
+		fRec0567_2 = fRec0567_1;
+		fRec0567_1 = fRec0567_0;
+
+		return outvec;
+	}
+
+	// Reduce one filter bank to a scalar: the sum of its four weighted outputs.
+	// Kept for single-bank callers; callers summing several banks should
+	// accumulate calc_4iir_vec() results and reduce once at the end.
+	float calc_4iir(float in) {
+		float32x4_t outvec = calc_4iir_vec(in);
+		float32x2_t sum_tmp1 = vpadd_f32(vget_low_f32(outvec), vget_high_f32(outvec));
+		return vget_lane_f32(sum_tmp1, 0) + vget_lane_f32(sum_tmp1, 1);
+	}
+};

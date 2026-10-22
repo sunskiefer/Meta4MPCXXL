@@ -1,0 +1,19 @@
+{
+  "name": "Meta4msXXL FX",
+  "vendor": "L'Cronx",
+  "uid": "M4xf",
+  "version": 1000,
+  "so": "meta4msxxl_fx.so",
+  "params": "../params.json",
+  "layout": "../layout.conf",
+  "tile": "../art/tile_fx.png",
+  "cc": false,
+  "nrpn": false,
+  "custom_build": "build.sh compiles and links the engine (tools/build_engine.py); this file feeds gen_vst.py",
+  "defines": {
+    "HAS_SONG_POS": 1,
+    "PARAM_TEXT_MAX": 64,
+    "MODULE_SUBDIR": "\"patches\""
+  },
+  "effect": true
+}

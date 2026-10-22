@@ -1,0 +1,485 @@
+#include "CoreModules/moduleFactory.hh"
+#include "util/string_compare.hh"
+#include <algorithm>
+#include <list>
+#include <map>
+
+#if defined(TESTPROJECT)
+#define pr_dbg(...)
+#define pr_err(...)
+#elif defined(VCVRACK)
+#define pr_dbg printf
+#define pr_err printf
+#else
+#include "console/pr_dbg.hh"
+#endif
+
+namespace MetaModule
+{
+
+namespace
+{
+//Lazily loaded maps, needed to avoid static-initialization ordering issues with CoreModules self-registering
+
+struct ModuleRegistry {
+	ModuleFactory::CreateModuleFunc creation_func;
+	ModuleInfoView info;
+	std::string faceplate;
+	std::string display_name;
+	// Metadata from plugin.json
+	std::string description;
+	std::vector<std::string> tags;
+	// Native module context menu (optional)
+	ContextMenuHandlers context_menu;
+	// Element groups, top-level order, and custom names for the module view's element list (optional)
+	std::vector<ElementGroup> element_groups;
+	std::vector<ElementRef> element_order;
+	std::vector<ElementName> element_names;
+};
+
+struct BrandRegistry {
+	std::string brand_name; //brand slug
+	std::string display_name;
+
+	std::map<std::string, ModuleRegistry> modules; //module slug => registry
+
+	BrandRegistry(std::string_view brand)
+		: brand_name{brand} {
+	}
+};
+
+auto &registry() {
+	static std::list<BrandRegistry> _registry{};
+	return _registry;
+}
+
+struct BrandAlias {
+	std::string to;
+	std::string from;
+};
+
+// Manually created list of known brand aliases.
+// More will be added at startup from the user settings
+// which gets populated when the user opens a plugin with brand aliases
+auto &brand_aliases() {
+	static auto _brand_aliases = std::vector<BrandAlias>{
+		BrandAlias{"4ms-XOXDrums", "4msDrums"},
+		BrandAlias{"4ms-XOXDrums", "XOXDrums"},
+		BrandAlias{"JWModules", "JW-Modules"},
+		BrandAlias{"NANOModules", "NanoModules"},
+		BrandAlias{"PhaseOscillator", "InfrasonicAudio"},
+		BrandAlias{"StellareModular-TuringMachine", "StellareModular"},
+	};
+
+	return _brand_aliases;
+}
+
+ModuleInfoView nullinfo{};
+
+} // namespace
+
+std::string ModuleFactory::cleanupBrandName(std::string_view brand_name) {
+
+	if (auto colon = brand_name.find_first_of(':'); colon != std::string_view::npos) {
+		brand_name = brand_name.substr(0, colon);
+	}
+
+	if (auto f = std::ranges::find(brand_aliases(), brand_name, &BrandAlias::from); f != brand_aliases().end())
+		return std::string{f->to};
+	else
+		return std::string{brand_name};
+};
+
+// returns a list iterator
+static auto brand_registry(std::string_view brand_name) {
+	// Resolve aliases:
+	auto brand = ModuleFactory::cleanupBrandName(brand_name);
+
+	// Try to match on brand_name:
+	auto found = std::ranges::find(registry(), brand, &BrandRegistry::brand_name);
+
+	// If not found, match case-insensitive
+	if (found == registry().end()) {
+		found = std::ranges::find_if(
+			registry(), [&brand](std::string_view a) { return equal_ci(a, brand); }, &BrandRegistry::brand_name);
+	}
+
+	return found;
+}
+
+bool ModuleFactory::registerModuleType(std::string_view brand_name,
+									   std::string_view module_slug,
+									   CreateModuleFunc funcCreate,
+									   const ModuleInfoView &info,
+									   std::string_view faceplate_filename) {
+
+	auto brand_reg = brand_registry(brand_name);
+	auto &brand = (brand_reg != registry().end()) ? *brand_reg : registry().emplace_back(brand_name);
+	brand.display_name = brand_name;
+	brand.modules[std::string(module_slug)] = {.creation_func = funcCreate,
+											   .info = info,
+											   .faceplate = std::string{faceplate_filename},
+											   .display_name = std::string(module_slug)};
+	return true;
+}
+
+bool ModuleFactory::registerModuleType(std::string_view typeslug,
+									   CreateModuleFunc funcCreate,
+									   const ModuleInfoView &info,
+									   std::string_view faceplate_filename) {
+	return registerModuleType("4msCompany", typeslug, funcCreate, info, faceplate_filename);
+}
+
+// brand_module(combined_slug)
+// Splits the slug into brand:module. Does not resolve brand aliases
+// If no brand: is given, then searches all brands for a matching module slug
+static std::pair<std::string_view, std::string_view> brand_module(std::string_view combined_slug) {
+	auto colon = combined_slug.find_first_of(':');
+	if (colon != std::string_view::npos) {
+		return {combined_slug.substr(0, colon), combined_slug.substr(colon + 1)};
+
+	} else {
+		auto module_slug = std::string(combined_slug);
+		//search all brands for module slug
+		for (auto &brand : registry()) {
+			if (brand.modules.contains(module_slug)) {
+				// pr_dbg("Brand not specified, found %s in %s\n", module_slug.data(), brand.brand_name.c_str());
+				return {brand.brand_name.c_str(), combined_slug};
+			}
+		}
+		return {"", ""};
+	}
+}
+
+static ModuleRegistry *find_module(std::string_view combined_slug) {
+	auto [brand, module_name] = brand_module(combined_slug);
+
+	if (auto brand_reg = brand_registry(brand); brand_reg != registry().end()) {
+		// Special-case: TSP became BWAVP
+		if (module_name.starts_with("TSP")) {
+			return &brand_reg->modules[std::string("BWAVP")];
+		}
+		if (brand_reg->modules.contains(std::string(module_name)))
+			return &brand_reg->modules[std::string(module_name)];
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<CoreProcessor> ModuleFactory::create(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug)) {
+		if (auto f_create = module->creation_func)
+			return f_create();
+	}
+
+	return nullptr;
+}
+
+ModuleInfoView &ModuleFactory::getModuleInfo(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return module->info;
+	else
+		return nullinfo;
+}
+
+std::string_view ModuleFactory::getModuleFaceplate(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return module->faceplate;
+	else
+		return "";
+}
+
+bool ModuleFactory::registerContextMenu(std::string_view brand_name,
+										std::string_view module_slug,
+										ContextMenuHandlers handlers) {
+	auto brand_reg = brand_registry(brand_name);
+	if (brand_reg == registry().end() || !brand_reg->modules.contains(std::string(module_slug))) {
+		pr_err("Cannot register context menu: module %.*s:%.*s is not registered\n",
+			   (int)brand_name.size(),
+			   brand_name.data(),
+			   (int)module_slug.size(),
+			   module_slug.data());
+		return false;
+	}
+
+	brand_reg->modules[std::string(module_slug)].context_menu = std::move(handlers);
+	return true;
+}
+
+ContextMenuHandlers const *ModuleFactory::getContextMenu(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug)) {
+		if (module->context_menu.get_items && module->context_menu.on_change)
+			return &module->context_menu;
+	}
+	return nullptr;
+}
+
+bool ModuleFactory::setElementGroups(std::string_view brand_name,
+									 std::string_view module_slug,
+									 std::vector<ElementGroup> groups) {
+	auto brand_reg = brand_registry(brand_name);
+	if (brand_reg == registry().end() || !brand_reg->modules.contains(std::string(module_slug))) {
+		pr_err("Cannot set element groups: module %.*s:%.*s is not registered\n",
+			   (int)brand_name.size(),
+			   brand_name.data(),
+			   (int)module_slug.size(),
+			   module_slug.data());
+		return false;
+	}
+
+	std::erase_if(groups, [](ElementGroup const &group) { return group.name.empty() || group.members.empty(); });
+
+	brand_reg->modules[std::string(module_slug)].element_groups = std::move(groups);
+	return true;
+}
+
+std::span<const ElementGroup> ModuleFactory::getElementGroups(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return module->element_groups;
+
+	return {};
+}
+
+bool ModuleFactory::setElementOrder(std::string_view brand_name,
+									std::string_view module_slug,
+									std::vector<ElementRef> order) {
+	auto brand_reg = brand_registry(brand_name);
+	if (brand_reg == registry().end() || !brand_reg->modules.contains(std::string(module_slug))) {
+		pr_err("Cannot set element order: module %.*s:%.*s is not registered\n",
+			   (int)brand_name.size(),
+			   brand_name.data(),
+			   (int)module_slug.size(),
+			   module_slug.data());
+		return false;
+	}
+
+	brand_reg->modules[std::string(module_slug)].element_order = std::move(order);
+	return true;
+}
+
+std::span<const ElementRef> ModuleFactory::getElementOrder(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return module->element_order;
+
+	return {};
+}
+
+bool ModuleFactory::setElementNames(std::string_view brand_name,
+									std::string_view module_slug,
+									std::vector<ElementName> names) {
+	auto brand_reg = brand_registry(brand_name);
+	if (brand_reg == registry().end() || !brand_reg->modules.contains(std::string(module_slug))) {
+		pr_err("Cannot set element names: module %.*s:%.*s is not registered\n",
+			   (int)brand_name.size(),
+			   brand_name.data(),
+			   (int)module_slug.size(),
+			   module_slug.data());
+		return false;
+	}
+
+	std::erase_if(names, [](ElementName const &name) { return name.name.empty(); });
+
+	brand_reg->modules[std::string(module_slug)].element_names = std::move(names);
+	return true;
+}
+
+std::span<const ElementName> ModuleFactory::getElementNames(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return module->element_names;
+
+	return {};
+}
+
+std::string_view ModuleFactory::getModuleDisplayName(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return module->display_name;
+	else {
+		[[maybe_unused]] auto const &[_, module_name] = brand_module(combined_slug);
+		if (module_name.length())
+			return module_name;
+		else
+			return combined_slug;
+	}
+}
+
+std::string_view ModuleFactory::getModuleSlug(std::string_view brand_slug, std::string_view display_name) {
+	if (auto brand_reg = brand_registry(brand_slug); brand_reg != registry().end()) {
+
+		for (auto const &[slug, module] : brand_reg->modules) {
+			if (module.display_name == display_name)
+				return slug;
+		}
+	}
+	return "";
+}
+
+std::string_view ModuleFactory::getBrandDisplayName(std::string_view brand_name) {
+	if (auto brand_reg = brand_registry(brand_name); brand_reg != registry().end())
+		return brand_reg->display_name;
+	else
+		return brand_name;
+}
+
+std::vector<std::string_view> ModuleFactory::getBrandSlugsWithDisplayName(std::string_view display_name) {
+	std::vector<std::string_view> slugs;
+
+	for (auto const &brand : registry()) {
+		if (brand.display_name == display_name) {
+			slugs.push_back(brand.brand_name);
+		}
+	}
+
+	return slugs;
+}
+
+void ModuleFactory::setModuleDisplayName(std::string_view combined_slug, std::string_view display_name) {
+	if (auto module = find_module(combined_slug))
+		module->display_name = display_name;
+}
+
+void ModuleFactory::setBrandDisplayName(std::string_view brand_name, std::string_view display_name) {
+	if (auto brand_reg = brand_registry(brand_name); brand_reg != registry().end()) {
+		brand_reg->display_name = display_name;
+	}
+}
+
+bool ModuleFactory::isValidSlug(std::string_view combined_slug) {
+	if (auto module = find_module(combined_slug))
+		return bool(module->creation_func);
+	else
+		return false;
+}
+
+bool ModuleFactory::isValidBrandModule(std::string_view brand, std::string_view module_name) {
+	if (auto brand_reg = brand_registry(brand); brand_reg != registry().end()) {
+		if (brand_reg->modules.contains(std::string(module_name))) {
+			return bool(brand_reg->modules[std::string(module_name)].creation_func);
+		}
+	}
+
+	return false;
+}
+
+bool ModuleFactory::isRegisteredBrand(std::string_view brand) {
+	return brand_registry(brand) != registry().end();
+}
+
+std::vector<std::string_view> ModuleFactory::getAllModuleSlugs(std::string_view brand_slug) {
+	std::vector<std::string_view> slugs;
+
+	auto const &modules = brand_registry(brand_slug)->modules;
+	slugs.reserve(modules.size());
+
+	for (auto const &[slug, module] : modules) {
+		slugs.push_back(slug);
+	}
+
+	return slugs;
+}
+
+std::vector<std::string> ModuleFactory::getAllModuleDisplayNames(std::string_view brand_display_name) {
+	std::vector<std::string> names;
+
+	auto const &modules = brand_registry(brand_display_name)->modules;
+	names.reserve(modules.size());
+
+	for (auto const &[slug, module] : modules) {
+		names.push_back(module.display_name);
+	}
+
+	return names;
+}
+
+std::vector<std::string_view> ModuleFactory::getAllBrandDisplayNames() {
+	std::vector<std::string_view> brands;
+	brands.reserve(registry().size());
+	for (auto &brand : registry()) {
+		if (std::ranges::find(brands, brand.display_name) == brands.end())
+			brands.push_back(brand.display_name);
+	}
+	return brands;
+}
+
+std::vector<std::string_view> ModuleFactory::getAllBrands() {
+	std::vector<std::string_view> brands;
+	brands.reserve(registry().size());
+	for (auto &brand : registry()) {
+		brands.emplace_back(brand.brand_name.c_str());
+	}
+	return brands;
+}
+
+bool ModuleFactory::unregisterModule(std::string_view brand, std::string_view module_name) {
+	if (auto brand_reg = brand_registry(brand); brand_reg != registry().end()) {
+		auto removed = brand_reg->modules.erase(std::string(module_name));
+
+		if (removed && brand_reg->modules.size() == 0) {
+			pr_dbg("Brand has no more modules, removing\n");
+			registry().remove_if([=](BrandRegistry &reg) { return reg.brand_name == brand; });
+		}
+		return removed > 0;
+	}
+	return false;
+}
+
+bool ModuleFactory::unregisterBrand(std::string_view brand_name) {
+	auto clean_brandname = cleanupBrandName(brand_name);
+	auto removed = registry().remove_if([=](BrandRegistry &reg) { return reg.brand_name == clean_brandname; });
+	return removed > 0;
+}
+
+void ModuleFactory::registerBrandAlias(std::string_view brand_name, std::string_view alias) {
+	if (alias.empty() || alias == brand_name)
+		return;
+
+	if (auto b = std::ranges::find(brand_aliases(), alias, &BrandAlias::from); b != brand_aliases().end()) {
+		// Do nothing if this alias already exists
+		if (b->to == brand_name)
+			return;
+		else {
+			// Replace the alias if we provide a different brand name to resolve to
+			b->to = brand_name;
+		}
+	} else {
+		// Create a new alias entry
+		pr_dbg("Found new BrandAlias{\"%s\", \"%s\"},\n", brand_name.data(), alias.data());
+		brand_aliases().emplace_back(std::string(brand_name), std::string(alias));
+	}
+}
+
+void ModuleFactory::setModuleDescription(std::string_view combined_slug, std::string_view description) {
+	if (auto mod = find_module(combined_slug)) {
+		mod->description = std::string(description);
+	}
+}
+
+void ModuleFactory::setModuleTags(std::string_view combined_slug, std::span<const std::string> tags) {
+	if (auto mod = find_module(combined_slug)) {
+		for (auto const &t : tags)
+			mod->tags.push_back(t);
+	}
+}
+
+std::span<const std::string> ModuleFactory::getModuleTags(std::string_view brand, std::string_view module_name) {
+
+	if (auto brand_reg = brand_registry(brand); brand_reg != registry().end()) {
+		if (brand_reg->modules.contains(std::string(module_name)))
+			return brand_reg->modules[std::string(module_name)].tags;
+	}
+	return {};
+}
+
+std::span<const std::string> ModuleFactory::getModuleTags(std::string_view combined_slug) {
+	if (auto mod = find_module(combined_slug)) {
+		return mod->tags;
+	}
+	return {};
+}
+
+std::string_view ModuleFactory::getModuleDescription(std::string_view combined_slug) {
+	if (auto mod = find_module(combined_slug)) {
+		return mod->description;
+	} else
+		return "";
+}
+} // namespace MetaModule

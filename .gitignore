@@ -1,0 +1,4 @@
+build/
+fx/build/
+dist/
+*.part
