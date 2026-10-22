@@ -15,7 +15,12 @@ All passed:
   parameter 0, chunk round trip, 3000 concurrent screen-side calls while rendering. Its two "rms 0" warnings are
   expected: it renders before the first patch has finished loading on the worker thread.
 
-CPU on x86 (one core): 2-10% per patch. The Force build was also run under ARM emulation (qemu-arm, glibc 2.31 cross libraries): see the 0.1.0 notes in CHANGELOG.md. The Force is far slower per core: measure with `tools/bench.sh` there.
+CPU on x86 (one core): 2-10% per patch; measure on the Force with `tools/bench.sh`.
+
+**The Force build under ARM emulation** (the armv7 objects linked into the same engine test, run with qemu-arm on the
+host): the first 4 factory patches, tabs, state round trip and Wi-Fi upload passed. This run found a real bug first:
+32-bit `readdir()`/`stat()` failed on the host's filesystem and the patch folders looked empty; the file code is now
+built with 64-bit offsets (`-D_FILE_OFFSET_BITS=64`). CPU figures under emulation mean nothing.
 
 ## On the Force (to do, in this order)
 

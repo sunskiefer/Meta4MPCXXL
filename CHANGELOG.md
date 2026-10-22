@@ -11,3 +11,4 @@ First build: Meta4msXXL (instrument) and Meta4msXXL FX (effect) for the Akai For
 - Patches from a Meta4msXXL folder on internal storage, SD or USB; projects keep the patch and every changed knob.
 - Panel: black, Davies 1900H-style knobs (one colour per Q-Link), the name in Saira Stencil One, all text large and white.
 - mpc-vst-plugins wrapper with the Q-Link/automation UpdateDisplay fix (#486-#489).
+- Not yet run on a Force: offline x86 tests and an ARM emulation run (TESTING.md). Released as a pre-release.

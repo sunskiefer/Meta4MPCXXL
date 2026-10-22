@@ -129,7 +129,10 @@ def main():
         return obj, None
 
     for s in PLAIN_SOURCES:
-        jobs_list.append((s, "c++", ["-std=gnu++23", "-DNDEBUG"], ["-I" + i for i in EXTRA_INCLUDES]))
+        # 64-bit file offsets and inode numbers: 32-bit readdir()/stat() fail (EOVERFLOW) on filesystems with large
+        # inode numbers, and the patch folder then looked empty (found under ARM emulation)
+        jobs_list.append((s, "c++", ["-std=gnu++23", "-DNDEBUG", "-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE64_SOURCE"],
+                          ["-I" + i for i in EXTRA_INCLUDES]))
     # rapidyaml's c4core is listed twice in 4ms's build (ryml's own copy and its subproject): compile each file once
     seen, uniq = set(), []
     for j in jobs_list:

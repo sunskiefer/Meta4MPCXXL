@@ -140,7 +140,8 @@ int main(int argc, char **argv) {
 
 	// count the library: step until the index stops moving
 	int count = 0;
-	for (int i = 0; i < 2000; i++) {
+	int scan_max = argc > 2 ? atoi(argv[2]) : 2000;
+	for (int i = 0; i < scan_max; i++) {
 		set(in, "patch", i);
 		render(in, nullptr, 2, &ppq, false);
 		std::this_thread::sleep_for(std::chrono::milliseconds(2));
@@ -151,6 +152,8 @@ int main(int argc, char **argv) {
 		count = i + 1;
 	}
 	printf("library: %d patches\n\n", count);
+	if (argc > 2) // a quick run (under ARM emulation): only the first N patches
+		count = std::min(count, atoi(argv[2]));
 
 	printf("%-28s %-34s %6s %8s %6s %5s\n", "patch", "status", "pages", "peak", "rms", "dc");
 	for (int i = 0; i < count; i++) {
