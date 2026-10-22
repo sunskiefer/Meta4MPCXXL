@@ -1,0 +1,37 @@
+# Builds Meta4msXXL and Meta4msXXL FX for the Force and publishes the GitHub release the catalog reads.
+# Runs when RELEASE (the version) changes on main, or by hand. Same scripts as a local build: ./build.sh, ./release.sh.
+name: release
+on:
+  push:
+    branches: [main]
+    paths: [RELEASE]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tools
+        run: pip install ziglang==0.17.0 pillow==12.3.0
+      - name: Version
+        run: echo "VERSION=$(tr -d ' \n' < RELEASE)" >> "$GITHUB_ENV"
+      - name: Build (Force, armv7)
+        run: ./build.sh
+      - name: Package (catalog-conformant zips)
+        run: ./release.sh "$VERSION"
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: Meta4msXXL ${{ env.VERSION }}
+          body_path: docs/release-notes.md
+          prerelease: true
+          files: dist/*.zip
