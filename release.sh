@@ -16,3 +16,9 @@ rel() {   # rel <id> <so> <gen dir> <name> <about>
 rel meta4mpcxxl meta4mpcxxl.so build "Meta4MPCXXL" "Plays 4ms MetaModule (VCV Rack) patches on the Force: every parameter on Q-Links, MIDI, clock, CV out, Wi-Fi upload from VCV Rack."
 rel meta4mpcxxl-fx meta4mpcxxl_fx.so fx/build "Meta4MPCXXL FX" "Meta4MPCXXL as an effect: the track's audio into a 4ms MetaModule (VCV Rack) patch."
 for z in dist/*.zip; do python3 "$MPC_VST/tools/catalog_check.py" "$z" --catalog; done
+# L'Cronx has a ' in it: every installer script must parse, or the release stops here (never ship a broken install.sh again)
+for z in dist/*.zip; do
+  for s in $(unzip -Z1 "$z" | grep -E '(^|/)(un)?install\.sh$'); do
+    unzip -p "$z" "$s" | sh -n || { echo "release: $z: $s does not parse" >&2; exit 1; }
+  done
+done

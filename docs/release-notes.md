@@ -14,3 +14,5 @@ Install: the zip's INSTALL.md (the installer stops and restarts MPC). Each plugi
 Built on mpc-vst-plugins with the Q-Link/automation UpdateDisplay fix (#486-#489). GPL-3.0-or-later. Not affiliated with 4ms Company.
 
 0.1.1: renamed from Meta4msXXL (no company name in the title); installs as a new plugin.
+
+0.1.2: fixes the installer stopping with "line 30: syntax error" (the ' in L'Cronx); nothing else changed.

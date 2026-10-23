@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2 (2026-10-23)
+- Fixed: the installer stopped with `install.sh: line 30: syntax error: unexpected "("` and nothing was installed.
+  The ' in L'Cronx broke the installer script; it is now escaped (mpc-vst-plugins with the L'Cronx quoting fix), and the
+  release fails if any installer script doesn't parse.
+
 ## 0.1.1 (2026-10-23)
 - Renamed from Meta4msXXL to **Meta4MPCXXL** (and Meta4MPCXXL FX): no company name in the plugin's title. New plugin
   IDs (M4Pi / M4Pf), so it installs as a new plugin. Your own patches now go in a folder named **Meta4MPCXXL**.
