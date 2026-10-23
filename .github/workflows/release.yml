@@ -33,5 +33,6 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: Meta4MPCXXL ${{ env.VERSION }}
           body_path: docs/release-notes.md
-          prerelease: true
+          prerelease: false
+          make_latest: true
           files: dist/*.zip
