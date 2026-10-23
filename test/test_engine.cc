@@ -1,4 +1,4 @@
-// Meta4msXXL offline engine test (x86): drives the engine through the wrapper's contract (mpc_engine()) the way the
+// Meta4MPCXXL offline engine test (x86): drives the engine through the wrapper's contract (mpc_engine()) the way the
 // plugin does on the Force, without MPC.
 //
 //   test/run_tests.sh   (builds this against build/host objects and runs it)
@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 	std::string root = argc > 1 ? argv[1] : ".";
 	std::string media = root + "/build/test/media";
 	system(("rm -rf '" + media + "' && mkdir -p '" + media + "/internal-test' '" + root + "/build/test'").c_str());
-	setenv("META4MSXXL_MEDIA_ROOT", media.c_str(), 1);
+	setenv("META4MPCXXL_MEDIA_ROOT", media.c_str(), 1);
 	E = mpc_engine();
 	std::string factory = root + "/patches";
 	void *in = E->create(factory.c_str());
@@ -279,7 +279,7 @@ int main(int argc, char **argv) {
 	std::this_thread::sleep_for(std::chrono::milliseconds(300));
 	wait_loaded(in, &ppq);
 	struct stat sb;
-	CHECK(stat((media + "/internal-test/Meta4msXXL/My Hub Patch.yml").c_str(), &sb) == 0, "uploaded file not saved");
+	CHECK(stat((media + "/internal-test/Meta4MPCXXL/My Hub Patch.yml").c_str(), &sb) == 0, "uploaded file not saved");
 	printf("after upload: %s | %s | %s\n", get(in, "patch_name").c_str(), get(in, "status").c_str(),
 		   get(in, "wifi_msg").c_str());
 	set(in, "wifi", 0);

@@ -1,8 +1,8 @@
-# Meta4msXXL
+# Meta4MPCXXL
 
-**Meta4msXXL** and **Meta4msXXL FX** play 4ms MetaModule patches on the Akai Force (MPC OS VST2, armv7).
+**Meta4MPCXXL** and **Meta4MPCXXL FX** play 4ms MetaModule patches on the Akai Force (MPC OS VST2, armv7).
 
-The 4ms MetaModule brings VCV Rack patches to a standalone Eurorack module; Meta4msXXL brings them to the Force. You
+The 4ms MetaModule brings VCV Rack patches to a standalone Eurorack module; Meta4MPCXXL brings them to the Force. You
 build a patch in VCV Rack around the MetaModule hub, export it (or send it over Wi-Fi), and play it on a Force track
 with every parameter of every module on the Q-Links.
 
@@ -10,8 +10,8 @@ The patch player is 4ms's own code (their open-source firmware's patch player, t
 runs), so a patch plays the way it does on the MetaModule. 215 modules are built in: 4ms, Befaco, Mutable Instruments
 (AudibleInstruments), HetrickCV, Nonlinear Circuits, Valley, eightfold and VCV's core modules.
 
-- **Meta4msXXL** is an instrument: pads, keyboard, the track's sequence and MIDI go into the patch.
-- **Meta4msXXL FX** is an effect: the track's audio goes into the hub's In 1 / In 2, and MIDI still reaches the patch.
+- **Meta4MPCXXL** is an instrument: pads, keyboard, the track's sequence and MIDI go into the patch.
+- **Meta4MPCXXL FX** is an effect: the track's audio goes into the hub's In 1 / In 2, and MIDI still reaches the patch.
 
 Vendor: L'Cronx. Licence: GPL-3.0 (the 4ms code it is built on is GPL-3.0).
 
@@ -28,15 +28,15 @@ the arrows next to the page number do too. Each Q-Link slot has its own knob col
 
 ## Getting patches onto the Force
 
-The plugin lists the factory patches it ships with, plus every `.yml` patch in a folder named **Meta4msXXL** at the
+The plugin lists the factory patches it ships with, plus every `.yml` patch in a folder named **Meta4MPCXXL** at the
 top of the Force's internal storage, an SD card or a USB drive (subfolders are fine). Three ways to get them there:
 
 1. **Wi-Fi from VCV Rack.** On the SETUP page switch **Wi-Fi Receive** on; it shows an address like
    `http://192.168.1.40:8045`. Type that into the MetaModule hub's Wi-Fi address in VCV Rack and press the hub's
-   Wi-Fi send button: the patch is saved into the Meta4msXXL folder (internal storage, or the card if the hub is set
+   Wi-Fi send button: the patch is saved into the Meta4MPCXXL folder (internal storage, or the card if the hub is set
    to Card/USB) and loads at once. Off by default; it only accepts patch uploads, up to 1 MB.
-2. **USB from a computer**: copy the files into the Meta4msXXL folder, then press **RESCAN** on the SETUP page.
-3. **SD card / USB stick** with a Meta4msXXL folder on it, then RESCAN.
+2. **USB from a computer**: copy the files into the Meta4MPCXXL folder, then press **RESCAN** on the SETUP page.
+3. **SD card / USB stick** with a Meta4MPCXXL folder on it, then RESCAN.
 
 A project remembers its patch by name and every parameter you changed, and finds it again even when more patches
 have been added.
@@ -51,7 +51,7 @@ have been added.
     (1 V/oct, 0 V = C4), In 4 = velocity.
   - *Pads*: notes 36-43 (the first pad row) gate Gate In 1, Gate In 2, In 3, In 4, In 5, In 6, In 1, In 2
     (the last two on the instrument only).
-- **CV out** (SETUP page): the patch's Out 3-8 go out on a MIDI port the plugin opens, named "Meta4msXXL"
+- **CV out** (SETUP page): the patch's Out 3-8 go out on a MIDI port the plugin opens, named "Meta4MPCXXL"
   ("CV Out"). *Notes + CC*: Out 3 pitch + Out 4 gate as notes, Out 5-8 as CC 16-19. *CC only*: Out 3-8 as CC 16-21.
   In MPC's MIDI preferences enable the port, then point a CV track at it to drive the Force's CV/Gate jacks.
 - Out 1 / Out 2 are the plugin's stereo audio (a patch using only one of them plays it on both sides).

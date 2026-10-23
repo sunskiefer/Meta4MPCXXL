@@ -1,4 +1,4 @@
-# Builds Meta4msXXL and Meta4msXXL FX for the Force and publishes the GitHub release the catalog reads.
+# Builds Meta4MPCXXL and Meta4MPCXXL FX for the Force and publishes the GitHub release the catalog reads.
 # Runs when RELEASE (the version) changes on main, or by hand. Same scripts as a local build: ./build.sh, ./release.sh.
 name: release
 on:
@@ -31,7 +31,7 @@ jobs:
         with:
           tag_name: v${{ env.VERSION }}
           target_commitish: ${{ github.sha }}
-          name: Meta4msXXL ${{ env.VERSION }}
+          name: Meta4MPCXXL ${{ env.VERSION }}
           body_path: docs/release-notes.md
           prerelease: true
           files: dist/*.zip

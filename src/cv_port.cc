@@ -4,7 +4,7 @@
 #include <cstring>
 #include <dlfcn.h>
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 namespace
@@ -233,4 +233,4 @@ void CvPort::run() {
 	}
 }
 
-} // namespace Meta4ms
+} // namespace Meta4MPC

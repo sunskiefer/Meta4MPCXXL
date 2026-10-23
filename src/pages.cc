@@ -11,7 +11,7 @@
 
 using namespace MetaModule;
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 namespace
@@ -267,4 +267,4 @@ std::string Pages::value_text(Item const &it, PatchPlayer &player) {
 	return s;
 }
 
-} // namespace Meta4ms
+} // namespace Meta4MPC

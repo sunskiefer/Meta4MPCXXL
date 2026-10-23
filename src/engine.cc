@@ -1,11 +1,11 @@
-// Meta4msXXL: plays 4ms MetaModule patches (VCV Rack patches exported with the MetaModule hub) as an MPC OS plugin.
+// Meta4MPCXXL: plays 4ms MetaModule patches (VCV Rack patches exported with the MetaModule hub) as an MPC OS plugin.
 //
 // The patch player is 4ms's own (firmware/src/patch_play, vendored in third_party/metamodule), the code their
 // headless simulator runs. This file is the MPC side: the wrapper's engine contract (mpc-vst-plugins wrapper/engine.h),
 // one worker thread per instance for scanning and loading patches, MIDI from the track into the patch, the host's
 // tempo as MIDI clock, the Q-Link pages (pages.cc) and the CV port (cv_port.cc).
 //
-// Built twice: Meta4msXXL (instrument) and, with -DMETA4MS_FX, Meta4msXXL FX (effect: the track's audio goes into the
+// Built twice: Meta4MPCXXL (instrument) and, with -DMETA4MPC_FX, Meta4MPCXXL FX (effect: the track's audio goes into the
 // patch's In 1 / In 2).
 extern "C" {
 #include "engine.h"
@@ -46,15 +46,15 @@ extern "C" {
 
 using namespace MetaModule;
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
-#ifdef META4MS_FX
+#ifdef META4MPC_FX
 constexpr bool IsFx = true;
-constexpr const char *PlugName = "Meta4msXXL FX";
+constexpr const char *PlugName = "Meta4MPCXXL FX";
 #else
 constexpr bool IsFx = false;
-constexpr const char *PlugName = "Meta4msXXL";
+constexpr const char *PlugName = "Meta4MPCXXL";
 #endif
 
 constexpr float SampleRate = 44100.f;
@@ -986,11 +986,11 @@ struct DenormalGuard {
 #endif
 };
 
-} // namespace Meta4ms
+} // namespace Meta4MPC
 
 // ---------------------------------------------------------------- the wrapper's engine contract
 
-using Meta4ms::Inst;
+using Meta4MPC::Inst;
 
 static void *e_create(const char *data_dir) {
 	return new Inst(data_dir);
@@ -999,7 +999,7 @@ static void e_destroy(void *p) {
 	delete static_cast<Inst *>(p);
 }
 static void e_midi(void *p, const uint8_t *msg, int len) {
-	Meta4ms::DenormalGuard g;
+	Meta4MPC::DenormalGuard g;
 	static_cast<Inst *>(p)->midi_in(msg, len);
 }
 static void e_set(void *p, const char *k, const char *v) {
@@ -1009,11 +1009,11 @@ static int e_get(void *p, const char *k, char *buf, int len) {
 	return static_cast<Inst *>(p)->get_param(k, buf, len);
 }
 static void e_render(void *p, int16_t *out, int frames) {
-	Meta4ms::DenormalGuard g;
+	Meta4MPC::DenormalGuard g;
 	static_cast<Inst *>(p)->run([](int, float &l, float &r) { l = r = 0; }, out, frames);
 }
 static void e_process(void *p, const int16_t *in, int16_t *out, int frames) {
-	Meta4ms::DenormalGuard g;
+	Meta4MPC::DenormalGuard g;
 	static_cast<Inst *>(p)->run(
 		[in](int i, float &l, float &r) {
 			l = in[2 * i] * (1.f / 32768.f);
@@ -1028,7 +1028,7 @@ static void e_song_pos(void *p, double ppq, double bpm, int playing, int frames)
 
 extern "C" const mpc_engine_t *mpc_engine(void) {
 	static const mpc_engine_t api = {e_create, e_destroy, e_midi, e_set, e_get, e_render,
-#ifdef META4MS_FX
+#ifdef META4MPC_FX
 									 e_process,
 #else
 									 nullptr,

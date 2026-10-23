@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Replace the skin's knob filmstrips with Meta4msXXL's knob: the Davies 1900H seen from above.
+"""Replace the skin's knob filmstrips with Meta4MPCXXL's knob: the Davies 1900H seen from above.
 
     python3 tools/knob_art.py "<skin dir>/Plugin Skins"
 

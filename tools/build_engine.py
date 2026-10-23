@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Compile the vendored MetaModule patch player plus Meta4msXXL's engine into object files.
+"""Compile the vendored MetaModule patch player plus Meta4MPCXXL's engine into object files.
 
     python3 tools/build_engine.py arm   [-j N]   -> build/arm/obj/...   (Force / MPC OS Gen1: armv7-a hard-float, glibc 2.31, via Zig)
     python3 tools/build_engine.py host  [-j N]   -> build/host/obj/...  (x86 test build, the host's g++/gcc)
 
 Every MetaModule unit is compiled with the defines, include dirs, standard and forced includes recorded in
 third_party/metamodule/manifest.json (taken from 4ms's own headless build, tools/vendor_metamodule.py), so the code
-is built the way 4ms builds it. Meta4msXXL's own sources (ENGINE_SOURCES below) get the union of MetaModule's
+is built the way 4ms builds it. Meta4MPCXXL's own sources (ENGINE_SOURCES below) get the union of MetaModule's
 include dirs. Objects are rebuilt only when the source or any header it included changed (-MMD depfiles).
 Prints the list of object files (one per line) on success; build.sh links them with the wrapper.
 """
@@ -21,12 +21,12 @@ import sys
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 MM = "third_party/metamodule"
 ENGINE_SOURCES = ["src/pages.cc"]
-# Meta4msXXL sources that use only the C library and POSIX: compiled WITHOUT MetaModule's include dirs, whose plugin
+# Meta4MPCXXL sources that use only the C library and POSIX: compiled WITHOUT MetaModule's include dirs, whose plugin
 # SDK has its own dirent.h/stdio replacements for the hardware (they shadowed opendir() and the library came up empty).
 PLAIN_SOURCES = ["src/library.cc", "src/cv_port.cc", "src/wifi.cc"]
-# compiled once per plugin: Meta4msXXL (instrument) and Meta4msXXL FX (effect)
-VARIANTS = {"inst": [], "fx": ["-DMETA4MS_FX"]}
-# Meta4msXXL's own sources take the flags 4ms used for the patch player itself, so every header they share is
+# compiled once per plugin: Meta4MPCXXL (instrument) and Meta4MPCXXL FX (effect)
+VARIANTS = {"inst": [], "fx": ["-DMETA4MPC_FX"]}
+# Meta4MPCXXL's own sources take the flags 4ms used for the patch player itself, so every header they share is
 # compiled the same way on both sides.
 TEMPLATE_UNIT = "firmware/src/patch_play/patch_player_load.cc"
 EXTRA_INCLUDES = ["src", "third_party/flatbuffers/include", "third_party/4ms-vcv"]

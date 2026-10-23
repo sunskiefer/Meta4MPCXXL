@@ -10,7 +10,7 @@ dependency log), keeping their paths, and writes third_party/metamodule/manifest
 defines, include dirs, language standard and forced includes. tools/build_engine.py compiles from that manifest,
 so the plugin builds the same code the 4ms simulator does, without CMake and without fetching anything.
 
-Left out: the simulator's main (src/headless/main-headless.cc) and its wav file helpers; Meta4msXXL's engine
+Left out: the simulator's main (src/headless/main-headless.cc) and its wav file helpers; Meta4MPCXXL's engine
 (src/) takes their place. Licence files of every vendored project are copied too.
 """
 import json
@@ -26,9 +26,9 @@ ROOT = os.path.normpath(os.path.join(HERE, ".."))
 DEST = os.path.join(ROOT, "third_party", "metamodule")
 
 SKIP_SOURCES = ("simulator/src/headless/main-headless.cc", "simulator/src/headless/audio_files.cc")
-# Replaced by Meta4msXXL's own versions (see third_party/metamodule/VENDORED.md)
+# Replaced by Meta4MPCXXL's own versions (see third_party/metamodule/VENDORED.md)
 REPLACED = ("simulator/stubs/async_thread_control.cc",)
-# Headers Meta4msXXL's engine uses that the headless simulator itself did not include
+# Headers Meta4MPCXXL's engine uses that the headless simulator itself did not include
 EXTRA_FILES = ("firmware/src/gui/elements/state_names.hh", "firmware/src/core_m4/midi_controls.hh",
                "firmware/src/audio/midi.hh")
 KEEP_FLAGS = re.compile(r"^-(std=|D|include$|f(no-)?(fast-math|unsafe-math-optimizations|strict-aliasing))")

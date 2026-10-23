@@ -1,4 +1,4 @@
-// Meta4msXXL replacement for MetaModule's simulator/stubs/async_thread_control.cc (GPL-3.0, 4ms Company).
+// Meta4MPCXXL replacement for MetaModule's simulator/stubs/async_thread_control.cc (GPL-3.0, 4ms Company).
 //
 // Same API (coreproc_plugin/async_thread_control.hh): modules get a background task that a worker thread runs
 // every millisecond (file streaming, loading samples). Changes from the 4ms stub, because inside MPC several

@@ -1,4 +1,4 @@
-// Meta4msXXL: the patch's extra outputs (hub Out 3-8) as MIDI on an ALSA sequencer port of the plugin's own.
+// Meta4MPCXXL: the patch's extra outputs (hub Out 3-8) as MIDI on an ALSA sequencer port of the plugin's own.
 //
 // MPC OS ignores a plugin's VST MIDI output, but lists an ALSA sequencer port a plugin opens as a MIDI input device
 // (mpc-vst-plugins docs/NOTES.md, poc/midiport.c). A Force CV track set to listen to that port turns the notes into
@@ -18,7 +18,7 @@
 #include <string>
 #include <thread>
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 class CvPort {
@@ -73,4 +73,4 @@ private:
 	void send(Msg const &m);
 };
 
-} // namespace Meta4ms
+} // namespace Meta4MPC

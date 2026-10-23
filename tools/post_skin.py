@@ -29,11 +29,11 @@ SS = 4
 TEXTS = {
     1: [
         (640, 136, "mm", 34, DIM, "CV OUT"),
-        (250, 334, "mm", 34, DIM, "WI-FI RECEIVE"),
+        (250, 360, "mm", 34, DIM, "WI-FI RECEIVE"),
         (640, 252, "mm", 34, DIM, "MIDI TO HUB INS"),
-        (560, 530, "lm", 29, DIM, "Patches: a folder named Meta4msXXL on internal storage,"),
-        (560, 568, "lm", 29, DIM, "an SD card or a USB drive, then RESCAN."),
-        (560, 606, "lm", 29, DIM, "CV Out: patch outs 3-8 on the Meta4msXXL MIDI port."),
+        (560, 536, "lm", 29, DIM, "Patches: a Meta4MPCXXL folder on internal"),
+        (560, 572, "lm", 29, DIM, "storage, an SD card or USB, then RESCAN."),
+        (560, 608, "lm", 29, DIM, "CV Out: patch outs 3-8 on the Meta4MPCXXL port."),
     ],
 }
 
@@ -43,9 +43,13 @@ def font(path, px):
 
 
 def draw_text(im, x, y, anchor, size, colour, text, path=SANS):
-    """Text drawn 4x larger on a transparent layer, scaled down and composited (smooth edges)."""
-    f = font(path, size)
+    """Text drawn 4x larger on a transparent layer, scaled down and composited (smooth edges). Shrinks to stay
+    inside the page (a left-anchored line may not pass the right edge less 12 px)."""
     d0 = ImageDraw.Draw(im)
+    room = (im.width - 12 - x) if anchor == "lm" else min(x, im.width - x) * 2 - 24
+    while size > 14 and d0.textlength(text, font=font(path, size)) / SS > room:
+        size -= 1
+    f = font(path, size)
     w = int(d0.textlength(text, font=f) / SS) + 8
     h = int(size * 1.6) + 8
     layer = Image.new("RGBA", (w * SS, h * SS), (0, 0, 0, 0))

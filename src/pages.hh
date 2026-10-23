@@ -1,4 +1,4 @@
-// Meta4msXXL: the Q-Link pages of a loaded patch.
+// Meta4MPCXXL: the Q-Link pages of a loaded patch.
 //
 // A MetaModule patch keeps every parameter of every module (static_knobs) and, on top, its knob sets: the hub's
 // physical knobs mapped to one or more module parameters each. The plugin shows both as pages of 8, the eight
@@ -16,7 +16,7 @@ namespace MetaModule
 class PatchPlayer;
 }
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 constexpr unsigned SlotsPerPage = 8;
@@ -55,4 +55,4 @@ struct Pages {
 
 std::string module_title(MetaModule::PatchData const &pd, unsigned module_id);
 
-} // namespace Meta4ms
+} // namespace Meta4MPC

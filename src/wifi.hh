@@ -1,14 +1,14 @@
-// Meta4msXXL: receive patches from VCV Rack over Wi-Fi.
+// Meta4MPCXXL: receive patches from VCV Rack over Wi-Fi.
 //
 // The MetaModule hub module in VCV Rack (4ms-vcv, src/hub/hub_medium.cc wifiSendPatchFile) sends a patch to the
 // MetaModule's Wi-Fi expander as one HTTP request: POST <address>/action, the body a FlatBuffers "Message" holding an
 // "UploadPatch" (file name, volume "Internal" / "USB" / "Card", the .yml contents); it expects a "Message" holding a
 // "Result" (success, text) back. This answers that request, so typing the Force's address (shown on the SETUP page)
-// into the hub sends patches straight to Meta4msXXL. The schema header is 4ms-vcv's own (third_party/4ms-vcv).
+// into the hub sends patches straight to Meta4MPCXXL. The schema header is 4ms-vcv's own (third_party/4ms-vcv).
 //
 // Off unless switched on. Listens on port 8045 (the next free one up to 8052 when several instances have it on),
 // handles one request at a time on a thread of its own, accepts only that upload, at most 1 MB, and writes only
-// .yml files into a Meta4msXXL folder at the top of a drive.
+// .yml files into a Meta4MPCXXL folder at the top of a drive.
 #pragma once
 #include <atomic>
 #include <functional>
@@ -16,7 +16,7 @@
 #include <string>
 #include <thread>
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 class WifiReceiver {
@@ -55,4 +55,4 @@ private:
 
 std::string local_ip();
 
-} // namespace Meta4ms
+} // namespace Meta4MPC

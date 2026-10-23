@@ -1,9 +1,9 @@
 {
-  "name": "Meta4msXXL",
+  "name": "Meta4MPCXXL",
   "vendor": "L'Cronx",
-  "uid": "M4xi",
+  "uid": "M4Pi",
   "version": 1000,
-  "so": "meta4msxxl.so",
+  "so": "meta4mpcxxl.so",
   "params": "params.json",
   "layout": "layout.conf",
   "tile": "art/tile.png",

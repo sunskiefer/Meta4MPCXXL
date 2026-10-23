@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Offline x86 tests for Meta4msXXL (run before anything goes to the Force):
+# Offline x86 tests for Meta4MPCXXL (run before anything goes to the Force):
 #   1. test/test_engine.cc: every factory patch loaded, played (MIDI notes + host clock), every page and knob moved,
 #      state round trip, Wi-Fi upload as the VCV hub sends it;
 #   2. mpc-vst-plugins' own wrapper host test (tools/host_test.c) on both plugins: instances, names, set/get,

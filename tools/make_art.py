@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draw Meta4msXXL's Instruments-browser tiles (270 x 110): art/tile.png and art/tile_fx.png.
+"""Draw Meta4MPCXXL's Instruments-browser tiles (270 x 110): art/tile.png and art/tile_fx.png.
 
     python3 tools/make_art.py
 
@@ -35,6 +35,6 @@ def tile(name, sub, out):
 
 
 if __name__ == "__main__":
-    tile("Meta4msXXL", "", os.path.join(ROOT, "art", "tile.png"))
-    tile("Meta4msXXL", "FX", os.path.join(ROOT, "art", "tile_fx.png"))
+    tile("Meta4MPCXXL", "", os.path.join(ROOT, "art", "tile.png"))
+    tile("Meta4MPCXXL", "FX", os.path.join(ROOT, "art", "tile_fx.png"))
     print("art/tile.png, art/tile_fx.png")

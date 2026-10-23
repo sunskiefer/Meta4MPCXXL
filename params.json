@@ -1,5 +1,5 @@
 {
-  "name": "Meta4msXXL",
+  "name": "Meta4MPCXXL",
   "params": [
     {"key": "k1", "name": "Knob 1", "min": 0.0, "max": 1.0, "default": 0.5, "dynamic_name": true, "dynamic_display": true},
     {"key": "k2", "name": "Knob 2", "min": 0.0, "max": 1.0, "default": 0.5, "dynamic_name": true, "dynamic_display": true},

@@ -11,8 +11,8 @@ mkdir -p build/release/licenses && cp LICENSE build/release/licenses/GPL-3.0.txt
 rel() {   # rel <id> <so> <gen dir> <name> <about>
   python3 "$MPC_VST/tools/release.py" --so "build/arm/$2" --skin "$3/skin/L'Cronx - VST - $4" --entry "$3/pluginlist-entry.xml" \
     --version "$V" --extra build/release/patches:patches --extra build/release/licenses:licenses \
-    --user-data patches/user --about "$5" --id "$1" --repo sunskiefer/Meta4msXXL --license GPL-3.0-or-later -o dist
+    --user-data patches/user --about "$5" --id "$1" --repo sunskiefer/Meta4MPCXXL --license GPL-3.0-or-later -o dist
 }
-rel meta4msxxl meta4msxxl.so build "Meta4msXXL" "Plays 4ms MetaModule (VCV Rack) patches on the Force: every parameter on Q-Links, MIDI, clock, CV out, Wi-Fi upload from VCV Rack."
-rel meta4msxxl-fx meta4msxxl_fx.so fx/build "Meta4msXXL FX" "Meta4msXXL as an effect: the track's audio into a 4ms MetaModule (VCV Rack) patch."
+rel meta4mpcxxl meta4mpcxxl.so build "Meta4MPCXXL" "Plays 4ms MetaModule (VCV Rack) patches on the Force: every parameter on Q-Links, MIDI, clock, CV out, Wi-Fi upload from VCV Rack."
+rel meta4mpcxxl-fx meta4mpcxxl_fx.so fx/build "Meta4MPCXXL FX" "Meta4MPCXXL as an effect: the track's audio into a 4ms MetaModule (VCV Rack) patch."
 for z in dist/*.zip; do python3 "$MPC_VST/tools/catalog_check.py" "$z" --catalog; done

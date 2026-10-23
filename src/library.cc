@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <sys/stat.h>
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 namespace
@@ -84,7 +84,7 @@ std::vector<PatchEntry> scan_library(std::string const &factory_dir) {
 	}
 	std::sort(drives.begin(), drives.end());
 	for (auto &drv : drives) {
-		std::string root = mroot + "/" + drv + "/Meta4msXXL";
+		std::string root = mroot + "/" + drv + "/Meta4MPCXXL";
 		struct stat st;
 		if (stat(root.c_str(), &st) == 0 && S_ISDIR(st.st_mode))
 			walk(root, "", 1, false, out);
@@ -103,7 +103,7 @@ int find_entry(std::vector<PatchEntry> const &lib, std::string const &rel, std::
 }
 
 std::string media_root() {
-	const char *e = std::getenv("META4MSXXL_MEDIA_ROOT");
+	const char *e = std::getenv("META4MPCXXL_MEDIA_ROOT");
 	return e && *e ? e : "/media";
 }
 
@@ -120,4 +120,4 @@ std::string read_file(std::string const &path) {
 	return s;
 }
 
-} // namespace Meta4ms
+} // namespace Meta4MPC

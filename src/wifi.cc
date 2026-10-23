@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <vector>
 
-namespace Meta4ms
+namespace Meta4MPC
 {
 
 namespace
@@ -240,7 +240,7 @@ void WifiReceiver::serve(int fd) {
 	std::string lh = lower(head);
 
 	if (first.rfind("GET ", 0) == 0) {
-		static const char page[] = "Meta4msXXL: send patches from the MetaModule hub in VCV Rack to this address.\n";
+		static const char page[] = "Meta4MPCXXL: send patches from the MetaModule hub in VCV Rack to this address.\n";
 		respond(fd, 200, "OK", "text/plain", page, sizeof page - 1);
 		return;
 	}
@@ -278,7 +278,7 @@ void WifiReceiver::serve(int fd) {
 				err = "Empty patch";
 		}
 	}
-	auto r = saved.empty() ? result_message(false, err) : result_message(true, "Loaded on Meta4msXXL");
+	auto r = saved.empty() ? result_message(false, err) : result_message(true, "Loaded on Meta4MPCXXL");
 	respond(fd, 200, "OK", "application/octet-stream", r.data(), r.size());
 	{
 		std::lock_guard<std::mutex> g{mx_};
@@ -316,10 +316,10 @@ std::string WifiReceiver::save(
 		err = "No drive to save to";
 		return "";
 	}
-	std::string dir = root + "/" + drive + "/Meta4msXXL";
+	std::string dir = root + "/" + drive + "/Meta4MPCXXL";
 	mkdir(dir.c_str(), 0775);
 	if (!is_dir(dir)) {
-		err = "Cannot create folder Meta4msXXL";
+		err = "Cannot create folder Meta4MPCXXL";
 		return "";
 	}
 	std::string path = dir + "/" + clean_name(filename);
@@ -339,4 +339,4 @@ std::string WifiReceiver::save(
 	return path;
 }
 
-} // namespace Meta4ms
+} // namespace Meta4MPC
