@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Compile the vendored MetaModule patch player plus Meta4MPCXXL's engine into object files.
 
-    python3 tools/build_engine.py arm   [-j N]   -> build/arm/obj/...   (Force / MPC OS Gen1: armv7-a hard-float, glibc 2.31, via Zig)
-    python3 tools/build_engine.py host  [-j N]   -> build/host/obj/...  (x86 test build, the host's g++/gcc)
+    python3 tools/build_engine.py arm   [-j N]   -> build/arm/obj/...      (Force / MPC OS Gen1: armv7-a hard-float, glibc 2.31, via Zig)
+    python3 tools/build_engine.py aarch64 [-j N]  -> build/aarch64/obj/...  (MPC OS Gen2: RK3588, aarch64, glibc 2.31 ceiling, via Zig)
+    python3 tools/build_engine.py host  [-j N]   -> build/host/obj/...     (x86 test build, the host's g++/gcc)
 
 Every MetaModule unit is compiled with the defines, include dirs, standard and forced includes recorded in
 third_party/metamodule/manifest.json (taken from 4ms's own headless build, tools/vendor_metamodule.py), so the code
@@ -41,6 +42,15 @@ TARGETS = {
                    # CMSIS-DSP's DSP-extension paths need CMSIS-Core intrinsics (__QADD...) the simulator never
                    # vendored; its plain C paths are what 4ms's x86 build runs, so take those.
                    "-U__ARM_FEATURE_DSP"],
+    },
+    "aarch64": {
+        # MPC OS Gen2 (Live III / Key 61/37 / One+ / Force Gen2: RK3588, aarch64 userland, glibc 2.39).
+        # Same contract as arm: glibc 2.31 ceiling, only VSTPluginMain exported.
+        # __ARM_FEATURE_DSP is never predefined on aarch64, so no -U needed; CMSIS-DSP takes its plain C paths.
+        "cc": ZIG + ["cc", "-target", "aarch64-linux-gnu.2.31", "-mcpu=generic"],
+        "cxx": ZIG + ["c++", "-target", "aarch64-linux-gnu.2.31", "-mcpu=generic"],
+        "common": ["-fPIC", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-ffunction-sections",
+                   "-fdata-sections", "-w", "-ffp-contract=off"],
     },
     "host": {
         "cc": ["gcc"],
